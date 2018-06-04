@@ -1,0 +1,57 @@
+version: '3.3'
+
+volumes:
+  skynet-mariadb-data:
+    driver: local
+
+services:
+  skynet:
+    container_name: skynet-service
+    build:
+      context: ./services/skynet
+      dockerfile: Dockerfile-dev
+    volumes:
+      - './services/skynet:/usr/src/app'
+    ports:
+      - 5001:5000
+    depends_on:
+      - mongo
+      - redis
+      - mariadb
+    links:
+      - mongo
+      - redis
+      - mariadb
+
+  mongo:
+    image: mongo:3.7.9
+    container_name: skynet-mongo
+    environment:
+      - MONGO_INITDB_ROOT_USERNAME=skynet
+      - MONGO_INITDB_ROOT_PASSWORD=skynet
+
+  redis:
+    image: redis:4.0.9-alpine
+    container_name: skynet-redis
+
+  mariadb:
+    image: wodby/mariadb:10.2-3.0.3
+    container_name: skynet-mariadb
+    volumes:
+      - skynet-mariadb-data:/var/lib/mysql
+    environment:
+      - MYSQL_DATABASE=skynet
+      - MYSQL_USER=skynet
+      - MYSQL_ROOT_PASSWORD=skynet
+      - MYSQL_PASSWORD=skynet
+
+  nginx:
+    container_name: nginx
+    build:
+      context: ./services/nginx
+      dockerfile: Dockerfile-dev
+    restart: always
+    ports:
+      - 80:80
+    depends_on:
+      - skynet
