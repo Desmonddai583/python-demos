@@ -46,7 +46,7 @@ services:
       - MYSQL_PASSWORD=skynet
 
   nginx:
-    container_name: nginx
+    container_name: skynet-nginx
     build:
       context: ./services/nginx
       dockerfile: Dockerfile-dev
